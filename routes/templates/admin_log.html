@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Admin - Moderation Log{% endblock %}
+
+{% block content %}
+{% set active = 'log' %}{% include "_admin_nav.html" %}
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr><th>Date</th><th>Removed listing</th><th>Seller</th><th>Reason</th><th>Orders removed</th><th>By admin</th></tr>
+            </thead>
+            <tbody>
+                {% for m in log %}
+                <tr>
+                    <td>{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ m.listing_title }}</td>
+                    <td>{{ m.seller or '-' }}</td>
+                    <td>{{ m.reason }}</td>
+                    <td>{{ m.orders_removed }}</td>
+                    <td>{{ m.admin or '-' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-4">No listings have been removed yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

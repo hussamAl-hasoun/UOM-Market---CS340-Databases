@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if editing else 'Add' }} {{ t.title }} - {{ t.site_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="mb-4">{{ 'Edit listing' if editing else 'Add a new listing' if lang == 'en' else ('عدل الإعلان' if editing else 'أضف إعلان جديد') }}</h3>
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ t.title }}</label>
+                        <input type="text" name="title" class="form-control" maxlength="100"
+                               value="{{ listing.get('title', '') }}" required placeholder="{{ t.title }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ t.description }}</label>
+                        <textarea name="description" rows="3" class="form-control" placeholder="{{ t.description }}">{{ listing.get('description') or '' }}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">{{ t.price }} ({{ 'ريال' if lang == 'ar' else 'SAR' }})</label>
+                            <input type="number" name="price" step="0.01" min="0" class="form-control"
+                                   value="{{ listing.get('price', '') }}" required placeholder="0.00">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">{{ t.type }}</label>
+                            <select name="item_type" class="form-select">
+                                <option value="product" {% if listing.get('item_type') == 'product' %}selected{% endif %}>{{ t.product }}</option>
+                                <option value="service" {% if listing.get('item_type') == 'service' %}selected{% endif %}>{{ t.service }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">{{ t.category }}</label>
+                            <select name="category_id" class="form-select">
+                                <option value="">{{ t.no_category }}</option>
+                                {% for c in categories %}
+                                <option value="{{ c.category_id }}"
+                                    {% if listing.get('category_id')|string == c.category_id|string %}selected{% endif %}>
+                                    {{ c.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% if editing %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ t.status }}</label>
+                        <select name="status" class="form-select">
+                            <option value="available" {% if listing.get('status') == 'available' %}selected{% endif %}>{{ t.available }}</option>
+                            <option value="sold" {% if listing.get('status') == 'sold' %}selected{% endif %}>{{ t.sold }}</option>
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <button class="btn btn-primary">{{ t.save }}</button>
+                    <a href="{{ url_for('listings.my_listings') }}" class="btn btn-link">{{ t.cancel }}</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

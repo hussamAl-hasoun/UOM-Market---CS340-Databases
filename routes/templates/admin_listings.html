@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Admin - Listings{% endblock %}
+
+{% block content %}
+{% set active = 'listings' %}{% include "_admin_nav.html" %}
+
+<!-- Quick numbers -->
+<div class="row g-3 mb-4">
+    {% for label, value in [('Students', counts.users), ('Listings', counts.listings),
+                            ('Available', counts.available), ('Orders', counts.orders),
+                            ('Removed by admin', counts.removed)] %}
+    <div class="col-6 col-md">
+        <div class="card shadow-sm text-center">
+            <div class="card-body py-3">
+                <div class="fs-3 fw-bold text-primary">{{ value }}</div>
+                <div class="text-muted small">{{ label }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Search and filter -->
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-6">
+        <input type="text" name="search" value="{{ search }}" class="form-control"
+               placeholder="Search by title, seller name or seller email...">
+    </div>
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">All statuses</option>
+            <option value="available" {% if status == 'available' %}selected{% endif %}>Available</option>
+            <option value="sold" {% if status == 'sold' %}selected{% endif %}>Sold</option>
+        </select>
+    </div>
+    <div class="col-md-3 d-grid"><button class="btn btn-primary">Filter</button></div>
+</form>
+
+<datalist id="reasons">
+    <option value="Prohibited item">
+    <option value="Misleading description">
+    <option value="Inappropriate content">
+    <option value="Duplicate listing">
+</datalist>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th></th><th>Listing</th><th>Seller</th><th>Price</th>
+                    <th>Status</th><th>Orders</th><th>Posted</th><th>Remove (reason required)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in listings %}
+                <tr>
+                    <td><img src="{{ get_listing_image(l.title) }}" alt=""
+                             style="width:56px;height:40px;object-fit:contain;" class="rounded bg-light"></td>
+                    <td>
+                        <a href="{{ url_for('listings.detail', listing_id=l.listing_id) }}"
+                           class="text-decoration-none fw-semibold">{{ l.title }}</a>
+                        <div class="small text-muted">{{ l.item_type|capitalize }} &middot; {{ l.category or 'No category' }}</div>
+                        <details class="small mt-1">
+                            <summary class="text-primary" style="cursor:pointer;">Details</summary>
+                            <div class="mt-1"><strong>Description:</strong> {{ l.description or 'No description' }}</div>
+                            <div><strong>Seller phone:</strong> {{ l.seller_phone or '-' }}</div>
+                            <div><strong>Listing ID:</strong> {{ l.listing_id }}</div>
+                        </details>
+                    </td>
+                    <td>{{ l.seller }}<div class="small text-muted">{{ l.seller_email }}</div></td>
+                    <td>{{ l.price }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if l.status == 'available' else 'secondary' }}">{{ l.status|capitalize }}</span>
+                    </td>
+                    <td>{{ l.orders_count }}</td>
+                    <td>{{ l.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td style="min-width: 260px;">
+                        <form method="post" class="d-flex gap-1"
+                              action="{{ url_for('admin.remove_listing', listing_id=l.listing_id) }}"
+                              onsubmit="return confirm('Remove this listing{% if l.orders_count %} and its {{ l.orders_count }} order(s){% endif %}?');">
+                            <input type="text" name="reason" list="reasons" class="form-control form-control-sm"
+                                   placeholder="Reason" required>
+                            <button class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No listings found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

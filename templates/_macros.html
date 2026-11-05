@@ -1,0 +1,13 @@
+{# Small reusable pieces used by several pages #}
+
+{% macro status_badge(status) %}
+    {% set colors = {
+        'pending': 'warning text-dark',
+        'accepted': 'info text-dark',
+        'completed': 'success',
+        'cancelled': 'secondary',
+        'available': 'success',
+        'sold': 'secondary'
+    } %}
+    <span class="badge bg-{{ colors.get(status, 'secondary') }}">{{ status|capitalize }}</span>
+{% endmacro %}

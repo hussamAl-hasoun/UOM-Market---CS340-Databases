@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Admin - Students{% endblock %}
+
+{% block content %}
+{% set active = 'users' %}{% include "_admin_nav.html" %}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-9">
+        <input type="text" name="search" value="{{ search }}" class="form-control"
+               placeholder="Search by name or email...">
+    </div>
+    <div class="col-md-3 d-grid"><button class="btn btn-primary">Search</button></div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th><th>Email / Phone</th><th>Role</th><th>Listings</th>
+                    <th>Orders placed</th><th>Joined</th><th>Status</th><th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.full_name }}</td>
+                    <td>{{ u.email }}<div class="small text-muted">{{ u.phone or '-' }}</div></td>
+                    <td><span class="badge bg-{{ 'danger' if u.role == 'admin' else ('success' if u.role == 'seller' else 'primary') }}">{{ u.role }}</span></td>
+                    <td>{{ u.listings_count }}</td>
+                    <td>{{ u.orders_count }}</td>
+                    <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if u.is_active %}<span class="badge bg-success">Active</span>
+                        {% else %}<span class="badge bg-secondary">Suspended</span>{% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if u.role != 'admin' %}
+                        <form method="post" class="d-inline"
+                              action="{{ url_for('admin.toggle_user', user_id=u.user_id) }}">
+                            {% if u.is_active %}
+                                <button class="btn btn-sm btn-outline-danger">Suspend</button>
+                            {% else %}
+                                <button class="btn btn-sm btn-outline-success">Activate</button>
+                            {% endif %}
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<p class="text-muted small mt-2">A suspended student cannot log in, and his listings are hidden from the marketplace.</p>
+{% endblock %}

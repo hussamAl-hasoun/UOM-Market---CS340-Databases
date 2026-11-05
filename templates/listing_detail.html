@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}{{ listing.title }} - {{ t.site_title }}{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('index') }}" class="text-decoration-none fw-bold mb-4 d-inline-block" style="color: #5D4652;">
+    ← {{ t.back_to_listings }}
+</a>
+
+<div class="card shadow-lg mt-3">
+    <div class="card-body p-5">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 250px;">
+                    <img src="{{ get_listing_image(listing.title) }}" alt="{{ listing.title }}" style="max-width: 90%; max-height: 90%; object-fit: contain;" class="rounded p-3">
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="badge {{ 'bg-success' if listing.item_type == 'service' else 'bg-info' }} mb-2">
+                            {{ listing.item_type|capitalize }}
+                        </span>
+                        {{ status_badge(listing.status) }}
+                        <h2 class="mt-2 fw-bold">{{ listing.title }}</h2>
+                        <p class="text-muted">{{ listing.category or 'No category' }}</p>
+                    </div>
+                    <div class="text-end">
+                        <h3 class="fw-bold" style="color: #5D4652;">{{ listing.price }} {{ 'ريال' if lang == 'ar' else 'SAR' }}</h3>
+                    </div>
+                </div>
+
+                <div class="bg-light p-4 rounded mb-4">
+                    <h5 class="fw-bold mb-2">📝 {{ t.description }}</h5>
+                    <p class="mb-0">{{ listing.description or (t.no_description if lang == 'en' else 'ما فيه وصف') }}</p>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p class="mb-1">
+                            <strong>👤 {{ t.seller }}:</strong> {{ listing.seller }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted">
+                            <strong>📅 {{ t.posted_date }}:</strong> {{ listing.created_at.strftime('%Y-%m-%d') }}
+                        </p>
+                    </div>
+                </div>
+
+                {% if can_order %}
+                    {% if already_ordered %}
+                        <button class="btn btn-secondary btn-lg" disabled>✓ {{ t.already_ordered }}</button>
+                        <a href="{{ url_for('orders.my_orders') }}" class="btn btn-link btn-lg">{{ t.view_my_orders }}</a>
+                    {% else %}
+                        <form method="post" action="{{ url_for('orders.create', listing_id=listing.listing_id) }}">
+                            <button class="btn btn-primary btn-lg px-5">🛒 {{ t.order_now }}</button>
+                        </form>
+                    {% endif %}
+                {% elif not current_user %}
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg px-5">{{ t.login_to_order }}</a>
+                {% elif listing.status == 'sold' %}
+                    <div class="alert alert-secondary mb-0">❌ {{ t.item_sold }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ t.register }} - {{ t.site_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <img src="/imeg/University logo.png" alt="University Logo" height="100" class="rounded mb-3">
+                    <h3 class="fw-bold" style="color: #5D4652;">{{ t.create_account }}</h3>
+                    <p class="text-muted">{{ t.join_marketplace }}</p>
+                </div>
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">👤 {{ t.full_name }}</label>
+                        <input type="text" name="full_name" class="form-control"
+                               value="{{ form.get('full_name', '') }}" required placeholder="{{ t.full_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">📧 {{ t.university_email }}</label>
+                        <input type="email" name="email" class="form-control"
+                               placeholder="name@{{ domain }}"
+                               value="{{ form.get('email', '') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">📱 {{ t.phone }}</label>
+                        <input type="text" name="phone" class="form-control"
+                               value="{{ form.get('phone', '') }}" placeholder="05XXXXXXXX">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">🔒 {{ t.password }}</label>
+                            <input type="password" name="password" class="form-control" required placeholder="{{ t.password }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">🔐 {{ t.confirm_password }}</label>
+                            <input type="password" name="confirm" class="form-control" required placeholder="{{ t.confirm_password }}">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">🎯 {{ t.account_type }}</label>
+                        <select name="role" class="form-select">
+                            <option value="user" {% if form.get('role') == 'user' %}selected{% endif %}>
+                                🛒 {{ t.buyer }}
+                            </option>
+                            <option value="seller" {% if form.get('role') == 'seller' %}selected{% endif %}>
+                                💼 {{ t.seller }}
+                            </option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100 py-2 fw-bold">{{ t.register_button }}</button>
+                </form>
+                <p class="text-center mt-4 mb-0">
+                    {{ t.have_account }} <a href="{{ url_for('login') }}" class="fw-bold" style="color: #5D4652;">{{ t.login_here }}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

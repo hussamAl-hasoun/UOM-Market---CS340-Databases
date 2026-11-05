@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h2 class="fw-bold" style="color: #5D4652;">🛒 {{ t.available_listings }}</h2>
+    <p class="text-muted">{{ t.browse_listings }}</p>
+</div>
+
+<!-- Search and filter -->
+<form method="get" class="row g-3 mb-5">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#5D4652" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+            </span>
+            <input type="text" name="search" value="{{ search }}"
+                   class="form-control border-start-0 ps-0" placeholder="{{ t.search_placeholder }}">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <select name="category" class="form-select">
+            <option value="">📁 {{ t.all_categories }}</option>
+            {% for c in categories %}
+            <option value="{{ c.category_id }}"
+                {% if selected_category == c.category_id|string %}selected{% endif %}>
+                {{ c.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">🔍 {{ t.search_button }}</button>
+    </div>
+</form>
+
+<!-- Listings grid -->
+<div class="row g-4">
+    {% for l in listings %}
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100">
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                <img src="{{ get_listing_image(l.title) }}" alt="{{ l.title }}" style="max-width: 90%; max-height: 90%; object-fit: contain;" class="rounded p-2">
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge {{ 'bg-success' if l.item_type == 'service' else 'bg-info' }}">
+                        {{ l.item_type|capitalize }}
+                    </span>
+                    <small class="text-muted">{{ l.category or 'No category' }}</small>
+                </div>
+                <h5 class="card-title fw-bold">
+                    <a href="{{ url_for('listings.detail', listing_id=l.listing_id) }}"
+                       class="text-decoration-none text-dark stretched-link">{{ l.title }}</a>
+                </h5>
+                <p class="text-muted mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                    </svg>
+                    {{ l.seller }}
+                </p>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <span class="fw-bold">{{ l.price }} {{ 'ريال' if lang == 'ar' else 'SAR' }}</span>
+                <a href="{{ url_for('listings.detail', listing_id=l.listing_id) }}" class="btn btn-sm btn-light">{{ t.view_details }}</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <div class="text-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ccc" class="bi bi-inbox" viewBox="0 0 16 16">
+                <path d="M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4H4.98zm9.954 5H10.45a2.5 2.5 0 0 1-4.9 0H1.066l.32 2.562a.5.5 0 0 0 .497.438h12.234a.5.5 0 0 0 .496-.438L14.933 9zM3.809 3.563A1.5 1.5 0 0 1 4.981 3h6.038a1.5 1.5 0 0 1 1.172.563l3.7 4.625a.5.5 0 0 1 .105.374l-.76 6.083a1.5 1.5 0 0 1-1.49 1.29H1.545a1.5 1.5 0 0 1-1.49-1.29L-.297 8.562a.5.5 0 0 1 .105-.374l3.7-4.625z"/>
+            </svg>
+            <p class="mt-3 fs-5">{{ t.no_listings }}</p>
+            <p class="small">{{ t.try_filters }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
