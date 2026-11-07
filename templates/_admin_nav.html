@@ -3,5 +3,7 @@
 <ul class="nav nav-pills mb-4">
     <li class="nav-item"><a class="nav-link {{ 'active' if active == 'listings' }}" href="{{ url_for('admin.listings') }}">Listings</a></li>
     <li class="nav-item"><a class="nav-link {{ 'active' if active == 'users' }}" href="{{ url_for('admin.users') }}">Students</a></li>
+    <li class="nav-item"><a class="nav-link {{ 'active' if active == 'orders' }}" href="{{ url_for('admin.orders') }}">Orders</a></li>
+    <li class="nav-item"><a class="nav-link {{ 'active' if active == 'categories' }}" href="{{ url_for('admin.categories') }}">Categories</a></li>
     <li class="nav-item"><a class="nav-link {{ 'active' if active == 'log' }}" href="{{ url_for('admin.log') }}">Moderation Log</a></li>
 </ul>

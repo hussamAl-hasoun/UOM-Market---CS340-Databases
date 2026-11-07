@@ -16,11 +16,15 @@
             </a>
 
             <div class="ms-auto d-flex align-items-center gap-2">
-                <a href="{{ url_for('set_language', lang='ar' if session.get('lang') != 'ar' else 'en') }}" class="btn btn-sm btn-outline-light">
-                    {{ 'English' if session.get('lang') == 'ar' else 'العربية' }}
+                <a href="{{ url_for('set_language', lang='en' if lang == 'ar' else 'ar') }}" class="btn btn-sm btn-outline-light">
+                    {{ 'English' if lang == 'ar' else 'العربية' }}
                 </a>
                 {% if current_user %}
+                    {% if current_user.role == 'admin' %}
+                    <a class="btn btn-warning btn-sm" href="{{ url_for('admin.listings') }}">{{ t.admin_panel }}</a>
+                    {% else %}
                     <a class="btn btn-link text-white btn-sm" href="{{ url_for('orders.my_orders') }}">{{ t.my_orders }}</a>
+                    {% endif %}
                     {% if current_user.role == 'seller' %}
                     <a class="btn btn-link text-white btn-sm" href="{{ url_for('listings.my_listings') }}">{{ t.my_listings }}</a>
                     <a class="btn btn-link text-white btn-sm" href="{{ url_for('orders.seller_orders') }}">{{ t.received_orders }}</a>

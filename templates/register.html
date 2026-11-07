@@ -42,10 +42,10 @@
                         <label class="form-label fw-semibold">🎯 {{ t.account_type }}</label>
                         <select name="role" class="form-select">
                             <option value="user" {% if form.get('role') == 'user' %}selected{% endif %}>
-                                🛒 {{ t.buyer }}
+                                🛒 {{ t.buyer_option }}
                             </option>
                             <option value="seller" {% if form.get('role') == 'seller' %}selected{% endif %}>
-                                💼 {{ t.seller }}
+                                💼 {{ t.seller_option }}
                             </option>
                         </select>
                     </div>

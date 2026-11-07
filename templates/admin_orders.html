@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Admin - Orders{% endblock %}
+
+{% block content %}
+{% set active = 'orders' %}{% include "_admin_nav.html" %}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-9">
+        <select name="status" class="form-select">
+            <option value="">All statuses</option>
+            {% for s in ['pending', 'accepted', 'completed', 'cancelled'] %}
+            <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3 d-grid"><button class="btn btn-primary">Filter</button></div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr><th>#</th><th>Item</th><th>Price</th><th>Buyer</th><th>Seller</th><th>Date</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for o in orders %}
+                <tr>
+                    <td>{{ o.order_id }}</td>
+                    <td><a href="{{ url_for('listings.detail', listing_id=o.listing_id) }}" class="text-decoration-none">{{ o.title }}</a></td>
+                    <td>{{ o.price }}</td>
+                    <td>{{ o.buyer }}</td>
+                    <td>{{ o.seller }}</td>
+                    <td>{{ o.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <span class="badge bg-{{ {'pending': 'warning text-dark', 'accepted': 'info text-dark', 'completed': 'success', 'cancelled': 'secondary'}[o.status] }}">{{ o.status|capitalize }}</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No orders found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -3,9 +3,12 @@ routes/admin.py - the admin panel (the university supervisor / doctor).
 The admin can:
   - see ALL listings with full details, and remove any of them (reason required)
   - see all students, and suspend / activate them (a suspended student is logged out)
+  - see all orders in the marketplace
+  - add and delete categories
   - read the moderation log (every removed listing and why)
 """
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from mysql.connector import errors
 
 from db import fetch_all, fetch_one, execute, get_connection
 from auth import role_required
@@ -36,7 +39,10 @@ def block_suspended_users():
     if "user_id" in session and request.endpoint not in ("static", "serve_image"):
         row = fetch_one("SELECT is_active FROM users WHERE user_id = %s", (session["user_id"],))
         if row is None or not row["is_active"]:
+            lang = session.get("lang")
             session.clear()
+            if lang:
+                session["lang"] = lang
             flash("Your account is suspended. Please contact the administration.", "danger")
             return redirect(url_for("login"))
 
@@ -133,6 +139,70 @@ def toggle_user(user_id):
         flash(f"{user['full_name']} was {state}.", "success")
 
     return redirect(url_for("admin.users"))
+
+
+# ---------------------------------------------------------------
+# Orders: see all
+# ---------------------------------------------------------------
+@bp.route("/orders")
+@role_required("admin")
+def orders():
+    status = request.args.get("status", "")
+
+    sql = """
+        SELECT o.order_id, o.status, o.created_at,
+               l.listing_id, l.title, l.price,
+               b.full_name AS buyer, s.full_name AS seller
+        FROM orders o
+        JOIN listings l ON o.listing_id = l.listing_id
+        JOIN users b    ON o.buyer_id   = b.user_id
+        JOIN users s    ON l.seller_id  = s.user_id
+        WHERE 1 = 1
+    """
+    params = []
+    if status in ("pending", "accepted", "completed", "cancelled"):
+        sql += " AND o.status = %s"
+        params.append(status)
+    sql += " ORDER BY o.created_at DESC, o.order_id DESC"
+
+    return render_template("admin_orders.html", orders=fetch_all(sql, params), status=status)
+
+
+# ---------------------------------------------------------------
+# Categories: add / delete
+# ---------------------------------------------------------------
+@bp.route("/categories", methods=["GET", "POST"])
+@role_required("admin")
+def categories():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        if not name:
+            flash("Category name is required.", "danger")
+        else:
+            try:
+                execute("INSERT INTO categories (name) VALUES (%s)", (name,))
+                flash(f"Category '{name}' added.", "success")
+            except errors.IntegrityError:
+                flash("This category already exists.", "danger")
+        return redirect(url_for("admin.categories"))
+
+    rows = fetch_all("""
+        SELECT c.category_id, c.name, COUNT(l.listing_id) AS listings_count
+        FROM categories c
+        LEFT JOIN listings l ON l.category_id = c.category_id
+        GROUP BY c.category_id, c.name
+        ORDER BY c.name
+    """)
+    return render_template("admin_categories.html", categories=rows)
+
+
+@bp.route("/categories/<int:category_id>/delete", methods=["POST"])
+@role_required("admin")
+def delete_category(category_id):
+    # ON DELETE SET NULL in the database: the listings stay, their category becomes empty
+    execute("DELETE FROM categories WHERE category_id = %s", (category_id,))
+    flash("Category deleted. Its listings were kept without a category.", "info")
+    return redirect(url_for("admin.categories"))
 
 
 # ---------------------------------------------------------------

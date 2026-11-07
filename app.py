@@ -8,7 +8,7 @@ import os
 
 from db import fetch_all, fetch_one, execute
 from auth import ALLOWED_EMAIL_DOMAIN
-from routes import listings, orders
+from routes import listings, orders, admin
 
 app = Flask(__name__)
 app.secret_key = "change-this-secret-key"   # needed for login sessions
@@ -16,6 +16,7 @@ app.secret_key = "change-this-secret-key"   # needed for login sessions
 # Register the other route files (blueprints)
 app.register_blueprint(listings.bp)
 app.register_blueprint(orders.bp)
+app.register_blueprint(admin.bp)
 
 # Serve images from imeg folder
 @app.route('/imeg/<path:filename>')
@@ -69,6 +70,7 @@ def set_language(lang):
 TRANSLATIONS = {
     'ar': {
         'site_title': 'UOM Market',
+        'admin_panel': 'لوحة الأدمن',
         'available_listings': 'الإعلانات المتاحة',
         'browse_listings': 'شوف اللي يبيعه طلاب الجامعة',
         'search_placeholder': 'ابحث عن الشي...',
@@ -95,8 +97,8 @@ TRANSLATIONS = {
         'phone': 'الجوال (اختياري)',
         'confirm_password': 'تأكيد كلمة السر',
         'account_type': 'نوع الحساب',
-        'buyer': 'مشتري (تشوف وتشتري)',
-        'seller': 'بائع (تبيع وتعرض)',
+        'buyer_option': 'مشتري (تشوف وتشتري)',
+        'seller_option': 'بائع (تبيع وتعرض)',
         'register_button': 'سجل',
         'have_account': 'عندك حساب بالفعل؟',
         'login_here': 'سجل دخولك',
@@ -147,6 +149,7 @@ TRANSLATIONS = {
     },
     'en': {
         'site_title': 'UOM Market',
+        'admin_panel': 'Admin Panel',
         'available_listings': 'Available Listings',
         'browse_listings': 'Browse through amazing products and services',
         'search_placeholder': 'Search by title...',
@@ -173,8 +176,8 @@ TRANSLATIONS = {
         'phone': 'Phone (optional)',
         'confirm_password': 'Confirm Password',
         'account_type': 'Account Type',
-        'buyer': 'Buyer (browse and order)',
-        'seller': 'Seller (post items and services)',
+        'buyer_option': 'Buyer (browse and order)',
+        'seller_option': 'Seller (post items and services)',
         'register_button': 'Register',
         'have_account': 'Already have an account?',
         'login_here': 'Login here',
@@ -226,6 +229,14 @@ TRANSLATIONS = {
 }
 
 
+def clear_session_keep_language():
+    """Log out / log in without forgetting the language the user chose."""
+    lang = session.get("lang")
+    session.clear()
+    if lang:
+        session["lang"] = lang
+
+
 @app.context_processor
 def inject_user():
     """Make 'current_user' available in every template (for the navbar)."""
@@ -262,6 +273,7 @@ def index():
         JOIN users u            ON l.seller_id = u.user_id
         LEFT JOIN categories c  ON l.category_id = c.category_id
         WHERE l.status = 'available'
+          AND u.is_active = 1
     """
     params = []
 
@@ -341,12 +353,15 @@ def login():
         user = fetch_one("SELECT * FROM users WHERE email = %s", (email,))
 
         if user and check_password_hash(user["password_hash"], password):
-            session.clear()
+            if not user["is_active"]:
+                flash("Your account is suspended. Please contact the administration.", "danger")
+                return render_template("login.html")
+            clear_session_keep_language()
             session["user_id"] = user["user_id"]
             session["full_name"] = user["full_name"]
             session["role"] = user["role"]
             flash(f"Welcome back, {user['full_name']}!", "success")
-            return redirect(url_for("index"))
+            return redirect(url_for("admin.listings" if user["role"] == "admin" else "index"))
 
         flash("Wrong email or password.", "danger")
 
@@ -355,7 +370,7 @@ def login():
 
 @app.route("/logout")
 def logout():
-    session.clear()
+    clear_session_keep_language()
     flash("You have been logged out.", "info")
     return redirect(url_for("index"))
 

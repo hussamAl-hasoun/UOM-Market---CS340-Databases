@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Admin - Categories{% endblock %}
+
+{% block content %}
+{% set active = 'categories' %}{% include "_admin_nav.html" %}
+
+<form method="post" class="row g-2 mb-3">
+    <div class="col-md-9">
+        <input type="text" name="name" class="form-control" maxlength="50" placeholder="New category name" required>
+    </div>
+    <div class="col-md-3 d-grid"><button class="btn btn-primary">Add category</button></div>
+</form>
+
+<div class="card shadow-sm">
+    <table class="table align-middle mb-0">
+        <thead class="table-light"><tr><th>#</th><th>Name</th><th>Listings</th><th class="text-end">Action</th></tr></thead>
+        <tbody>
+            {% for c in categories %}
+            <tr>
+                <td>{{ c.category_id }}</td><td>{{ c.name }}</td><td>{{ c.listings_count }}</td>
+                <td class="text-end">
+                    <form method="post" class="d-inline"
+                          action="{{ url_for('admin.delete_category', category_id=c.category_id) }}"
+                          onsubmit="return confirm('Delete this category? Its listings will stay without a category.');">
+                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="text-muted small mt-2">Deleting a category does not delete its listings. They stay without a category.</p>
+{% endblock %}
